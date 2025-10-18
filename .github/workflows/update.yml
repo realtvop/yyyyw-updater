@@ -12,8 +12,17 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
       
-      - name: Clone repo
-        run: git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/yyyyw
+      - name: Clone repos
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/yyyyw
+          git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/pgr-data-api
+
+      - name: Run pgr-data-api
+        working-directory: pgr-data-api
+        run: |
+          pnpm install
+          pnpm run start &
+          sleep 5  # 等待服务器启动
 
       - name: 设置 Python
         uses: actions/setup-python@v4
