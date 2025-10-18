@@ -17,6 +17,11 @@ jobs:
           git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/yyyyw
           git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/pgr-data-api
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: "22"
+
       - name: Run pgr-data-api
         working-directory: pgr-data-api
         run: |
