@@ -27,13 +27,6 @@ jobs:
         with:
           version: 10
 
-      - name: Run pgr-data-api
-        working-directory: pgr-data-api
-        run: |
-          pnpm install
-          pnpm run start &
-          sleep 5  # 等待服务器启动
-
       - name: 设置 Python
         uses: actions/setup-python@v4
         with:
