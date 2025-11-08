@@ -1,6 +1,8 @@
 name: Update (includes pgr)
 
 on:
+  schedule:
+    - cron: 0 * * * *
   # 允许手动触发工作流
   workflow_dispatch:
 
