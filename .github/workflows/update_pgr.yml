@@ -1,0 +1,76 @@
+name: Update (includes pgr)
+
+on:
+  # 允许手动触发工作流
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: macos-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: Clone repos
+        run: |
+          git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/yyyyw
+          git clone https://${{ secrets.GH_PAT }}@github.com/realtvop/pgr-data-api
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Run pgr-data-api
+        working-directory: pgr-data-api
+        run: |
+          pnpm install
+          pnpm run start &
+          sleep 5  # 等待服务器启动
+
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: 安装 Python 依赖
+        working-directory: yyyyw/data/updater
+        run: pip install -r requirements.txt
+
+      - name: 运行更新脚本
+        working-directory: yyyyw/data/updater
+        env:
+          # 从 GitHub Secrets 读取用户 ID
+          # 在 GitHub 仓库设置中添加这些 secrets
+          maimaidxchn_userids: ${{ secrets.MAIMAIDXCHN_USERIDS }}
+        run: python3 main.py
+
+      - name: Check for changes
+        id: verify-changed-files
+        working-directory: yyyyw
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 提交更新
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        working-directory: yyyyw
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "ci: 更新玩家数据"
+          git push
+
+      - name: No changes detected
+        if: steps.verify-changed-files.outputs.changed == 'false'
+        run: echo "No changes in charts data detected, skipping commit."
