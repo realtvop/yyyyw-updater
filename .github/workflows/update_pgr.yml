@@ -49,6 +49,7 @@ jobs:
           # 从 GitHub Secrets 读取用户 ID
           # 在 GitHub 仓库设置中添加这些 secrets
           maimaidxchn_userids: ${{ secrets.MAIMAIDXCHN_USERIDS }}
+          phigros_sessiontokens: ${{ secrets.PHIGROS_SESSIONTOKENS }}
         run: python3 main.py
 
       - name: Check for changes
