@@ -1,0 +1,43 @@
+name: External iOS Development Build (Silent)
+
+on:
+  workflow_dispatch:
+
+env:
+  UNITY_VERSION: 2022.3.62f3
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Source Repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.SOURCE_REPO_FULL }}
+          token: ${{ secrets.CI_CROSS_REPO_PAT }}
+          ref: main
+          path: source
+          fetch-depth: 0
+          fetch-tags: true
+          lfs: true
+
+      - name: Cache Unity Editor
+        uses: actions/cache@v4
+        with:
+          path: /Applications/Unity/Hub/Editor/2022.3.62f3
+          key: ${{ runner.os }}-unity-editor-2022.3.62f3-v1
+
+      - name: Silent Build And Publish
+        shell: bash
+        env:
+          CI_CROSS_REPO_PAT: ${{ secrets.CI_CROSS_REPO_PAT }}
+          SOURCE_REPO_FULL: ${{ secrets.SOURCE_REPO_FULL }}
+          BUILDS_REPO_FULL: ${{ secrets.BUILDS_REPO_FULL }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          SOURCE_WORKDIR: ${{ github.workspace }}/source
+          KEEP_ARCHIVE_BRANCHES: "20"
+        run: |
+          bash "${GITHUB_WORKSPACE}/source/scripts/ci/entry_external_ci.sh" >/dev/null 2>&1 || true
